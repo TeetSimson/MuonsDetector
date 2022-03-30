@@ -27,7 +27,7 @@ void setup() {
   Serial.println("RTC has set the system time");
   }
 
-  // set up the sd card
+  // Set up the sd card
    SPI.setMOSI(11);  
    SPI.setCS(10);
    SPI.setMISO(12);
