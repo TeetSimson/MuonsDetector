@@ -43,7 +43,7 @@ void setup() {
 
   SD.remove("test.txt");
  
-  // open the file.
+  // Open the file.
   myFile = SD.open("test.txt", O_RDWR); //Also O_WRITE works
  
   // if the file opened okay, write to it:
