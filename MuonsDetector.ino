@@ -1,5 +1,6 @@
 // March 23
 
+#include <Arduino.h>
 #include <SD.h>
 #include <SPI.h>
 #include <TimeLib.h>
@@ -7,7 +8,7 @@
 File myFile;
 const int chipSelect = 10;
 static const unsigned long REFRESH_INTERVAL = 1000;
-static unsigned long lastRefreshTime = 0;
+static unsigned long lastRefreshTime;
 double cps = 0;
 
 void setup() {
@@ -19,7 +20,7 @@ void setup() {
   delay(100);
 
   // SET THE CORRECT TIME
-  setTime(16, 47, 35, 2, 3, 2022);
+  setTime(16, 14, 0, 30, 3, 2022);
  
   if (timeStatus()!= timeSet) {
   Serial.println("Unable to sync with the RTC");
@@ -28,16 +29,16 @@ void setup() {
   }
 
   // Set up the sd card
-   SPI.setMOSI(11);  
-   SPI.setCS(10);
-   SPI.setMISO(12);
-   SPI.setSCK(13);
+  SPI.setMOSI(11);  
+  SPI.setCS(10);
+  SPI.setMISO(12);
+  SPI.setSCK(13);
  
   Serial.print("Initializing SD card...");
 
   if (!SD.begin(chipSelect)) {
-  Serial.println("initialization failed!");
-  return;
+    Serial.println("initialization failed!");
+    return;
   }
   Serial.println("initialization done.");
 
@@ -48,20 +49,23 @@ void setup() {
  
   // if the file opened okay, write to it:
   if (myFile) {
-  Serial.print("Writing to test.txt...");
-  // myFile.println("Time, CPM, CPS");
-  // close the file:
-  myFile.close();
-  Serial.println("done.");
+    Serial.print("Writing to test.txt...");
+    // myFile.println("Time, CPM, CPS");
+    // close the file:
+    myFile.close();
+    Serial.println("done.");
   } else {
-  // if the file didn't open, print an error:
-  Serial.println("1 error opening test.txt");
-  }
+    // if the file didn't open, print an error:
+    Serial.println("1 error opening test.txt");
+    }
 
   // How to overwrite the previous contents?!
  
   // re-open the file for reading:
   readSDData();
+
+  // Sync setup time
+  lastRefreshTime = millis();
 }
 
 void loop() {
@@ -74,15 +78,6 @@ void loop() {
   } else {
     cps += 1;
   }
-
-    
-  if (Serial.available()) {
-  time_t t_old = processSyncMessage();
-  if (t_old != 0) {
-    Teensy3Clock.set(t_old); // set the RTC
-    setTime(t_old);
-    }
-   }
 
   if (millis() - lastRefreshTime >= REFRESH_INTERVAL) {
         lastRefreshTime += REFRESH_INTERVAL;
