@@ -4,6 +4,7 @@
 #include <SD.h>
 #include <SPI.h>
 #include <TimeLib.h>
+#include <cmath>
 
 File myFile;
 const int chipSelect = 10;
