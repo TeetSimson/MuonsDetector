@@ -10,6 +10,9 @@ const int chipSelect = 10;
 static const unsigned long REFRESH_INTERVAL = 1000;
 static unsigned long lastRefreshTime;
 double cps = 0;
+int voltage1;
+int voltage2;
+int voltage3;
 
 void setup() {
    // set the Time library to use Teensy 3.0's RTC to keep time
@@ -72,10 +75,15 @@ void setup() {
 
 void loop() {
   double tthousand = 10000;
-  double muon_detector_1 = random(999) / tthousand;
-  double muon_detector_2 = random(999) / tthousand;
+
+  voltage1 = analogRead(1);
+  voltage2 = analogRead(2);
+  voltage3 = analogRead(3);
+
+  double muon_detector_1 = voltage1;
+  double muon_detector_2 = voltage2;
  
-  if (muon_detector_1 < 0.01 || muon_detector_2 < 0.01) {
+  if (muon_detector_1 < 10 || muon_detector_2 < 10) {
     cps = 0;
   } else {
     cps += 1;
