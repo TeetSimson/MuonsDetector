@@ -10,9 +10,12 @@ const int chipSelect = 10;
 static const unsigned long REFRESH_INTERVAL = 1000;
 static unsigned long lastRefreshTime;
 double cps = 0;
-int voltage1;
-int voltage2;
-int voltage3;
+double voltage1;
+double voltage2;
+double voltage3;
+
+int skipped;
+double meet;
 
 void setup() {
    // set the Time library to use Teensy 3.0's RTC to keep time
@@ -74,24 +77,33 @@ void setup() {
 }
 
 void loop() {
-  double tthousand = 10000;
 
-  voltage1 = analogRead(1);
-  voltage2 = analogRead(2);
-  voltage3 = analogRead(3);
-
-  double muon_detector_1 = voltage1;
-  double muon_detector_2 = voltage2;
+  voltage1 = analogRead(1) * (3.3 / 1023.0); // Volts
+  voltage2 = analogRead(2) * (3.3 / 1023.0);
+  voltage3 = analogRead(3) * (3.3 / 1023.0);
  
-  if (muon_detector_1 < 10 || muon_detector_2 < 10) {
-    cps = 0;
-  } else {
-    cps += 1;
+  if (skipped > 0) {
+    skipped += 1;
+  }
+
+  if (skipped == 0 || skipped > 3) {
+    if (voltage1 > 2.1 && skipped == 0) {
+      cps += 1;
+      // Serial.print("Detected!!! Voltage: ");
+      // Serial.print(voltage1);
+      // Serial.print(", cps: ");
+      // Serial.print(cps);
+      // Serial.print("\n");
+      skipped = 1;
+    }
+    else skipped = 0;
   }
 
   if (millis() - lastRefreshTime >= REFRESH_INTERVAL) {
     lastRefreshTime += REFRESH_INTERVAL;
-    writeDataToSD(cps);
+    // writeDataToSD(cps);
+    Serial.print(cps);
+    Serial.print("\n");
     cps = 0;
   }
     
