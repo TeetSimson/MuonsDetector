@@ -6,7 +6,12 @@
 #include <TimeLib.h>
 
 File myFile;
-const int chipSelect = 10;
+// const int ledPin = 11;
+const int voltagePin = A1;
+const int CSPin = 14;
+const int MOSIPin = 11;
+const int MISOPin = 12;
+const int SCKPin = 13;
 static const unsigned long REFRESH_INTERVAL = 1000;
 static unsigned long lastRefreshTime;
 double cps = 0;
@@ -36,19 +41,24 @@ void setup() {
     Serial.println("RTC has set the system time");
   }
 
+  // pinMode(ledPin, OUTPUT);
+
   // Set up the sd card
-  SPI.setMOSI(11);  
-  SPI.setCS(10);
-  SPI.setMISO(12);
-  SPI.setSCK(13);
+  SPI.setMOSI(MOSIPin);  
+  SPI.setCS(CSPin);
+  SPI.setMISO(MISOPin);
+  SPI.setSCK(SCKPin);
  
   Serial.print("Initializing SD card...");
 
-  if (!SD.begin(chipSelect)) {
+  if (!SD.begin(CSPin)) {
     Serial.println("initialization failed!");
     return;
   }
   Serial.println("initialization done.");
+  // digitalWrite(ledPin, HIGH);
+  // delay(500);
+  // digitalWrite(ledPin, LOW);
 
   SD.remove("test.txt");
  
@@ -72,22 +82,32 @@ void setup() {
   // re-open the file for reading:
   readSDData();
 
+  analogReadResolution(10);
+  analogReference(A2);
+
   // Sync setup time
   lastRefreshTime = millis();
 }
 
 void loop() {
 
-  voltage1 = analogRead(1) * (3.3 / 1023.0); // Volts
-  voltage2 = analogRead(2) * (3.3 / 1023.0);
-  voltage3 = analogRead(3) * (3.3 / 1023.0);
+  voltage1 = analogRead(A1) * (3.3 / 1023.0); // Volts
+  // if (voltage1 > 3.3) {
+
+  // }
+  Serial.print(voltage1, 3);
+//  Serial.print(", ");
+//  Serial.print(millis());
+  Serial.print("\n");
+  // voltage2 = analogRead(2) * (3.3 / 1023.0);
+  // voltage3 = analogRead(3) * (3.3 / 1023.0);
  
   if (skipped > 0) {
     skipped += 1;
   }
 
   if (skipped == 0 || skipped > 3) {
-    if (voltage1 > 2.1 && skipped == 0) {
+    if (voltage1 > 2.1  && skipped == 0) {
       cps += 1;
       // Serial.print("Detected!!! Voltage: ");
       // Serial.print(voltage1);
@@ -101,9 +121,9 @@ void loop() {
 
   if (millis() - lastRefreshTime >= REFRESH_INTERVAL) {
     lastRefreshTime += REFRESH_INTERVAL;
-    // writeDataToSD(cps);
-    Serial.print(cps);
-    Serial.print("\n");
+    writeDataToSD(cps);
+    // Serial.print(cps);
+    // Serial.print("\n");
     cps = 0;
   }
     
@@ -186,4 +206,3 @@ void printDigits(int digits, File myFile){
   Serial.print('0');
   Serial.print(digits);
 }
-
